@@ -1,5 +1,7 @@
 package io.ganguo.app.gcache.util;
 
+import io.ganguo.app.gcache.Config;
+
 import java.io.File;
 
 /**
@@ -17,7 +19,7 @@ public class CacheUtils {
 		int firstHalfLength = key.length() / 2;
 		String hashKey = String.valueOf(key.substring(0, firstHalfLength).hashCode());
 		hashKey += String.valueOf(key.substring(firstHalfLength).hashCode());
-		return hashKey;
+		return Config.CACHE_FILE_PREFIX + hashKey;
 	}
 
 	public static File getFileForKey(File rootDirectory, String key) {

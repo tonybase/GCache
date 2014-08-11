@@ -32,7 +32,9 @@ public class Config {
 	/**
 	 * Magic number for current version of cache file format.
 	 */
-	public static final int CACHE_MAGIC = 0x20140808;
+	public static final int CACHE_MAGIC = 0xCAC00001;
+	
+	public static final String CACHE_FILE_PREFIX = "cache_";
 
 	/**
 	 * 磁盘最大占用空间

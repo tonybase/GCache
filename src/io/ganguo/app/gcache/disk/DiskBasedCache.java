@@ -25,8 +25,7 @@ public class DiskBasedCache implements Cache {
 	/**
 	 * Map of the Key, CacheHeader pairs
 	 */
-	private final Map<String, CacheHeader> entries = new LinkedHashMap<String, CacheHeader>(
-			16, .75f, true);
+	private final Map<String, CacheHeader> entries = new LinkedHashMap<String, CacheHeader>(16, .75f, true);
 
 	/**
 	 * 缓存占用总大小大小
@@ -92,6 +91,9 @@ public class DiskBasedCache implements Cache {
 			return;
 		}
 		for (File file : files) {
+			if(!file.getName().startsWith(Config.CACHE_FILE_PREFIX)) {
+				continue ;
+			}
 			FileInputStream fis = null;
 			try {
 				fis = new FileInputStream(file);
@@ -99,6 +101,7 @@ public class DiskBasedCache implements Cache {
 				header.size = file.length();
 				put(header.key, header);
 			} catch (IOException e) {
+				GLog.e(TAG, "Failed to read header for" + file.getAbsolutePath(),  e);
 				if (file != null) {
 					file.delete();
 				}
@@ -152,8 +155,6 @@ public class DiskBasedCache implements Cache {
 			boolean success = e.writeHeader(fos);
 			if (!success) {
 				fos.close();
-				GLog.d(TAG, "Failed to write header for "
-									+ file.getAbsolutePath());
 				throw new IOException();
 			}
 			fos.write(entry.getData());
@@ -161,6 +162,8 @@ public class DiskBasedCache implements Cache {
 			put(key, e);
 			return;
 		} catch (IOException e) {
+			GLog.d(TAG, "Failed to write header for "
+					+ file.getAbsolutePath(), e);
 		}
 		boolean deleted = file.delete();
 		if (!deleted) {
@@ -223,11 +226,10 @@ public class DiskBasedCache implements Cache {
 		try {
 			cis = new CountingInputStream(new FileInputStream(file));
 			CacheHeader.readHeader(cis); // eat header
-			byte[] data = StreamUtils.streamToBytes(cis,
-					(int) (file.length() - cis.bytesRead));
+			byte[] data = StreamUtils.streamToBytes(cis, (int) (file.length() - cis.bytesRead));
 			return entry.toCacheEntry(data);
 		} catch (IOException e) {
-			GLog.d(TAG, file.getAbsolutePath() + " " + e.toString());
+			GLog.d(TAG, "Could not read cache data for " + file.getAbsolutePath(), e);
 			remove(key);
 			return null;
 		} finally {
@@ -259,8 +261,7 @@ public class DiskBasedCache implements Cache {
 	 */
 	@Override
 	public synchronized void remove(String key) {
-		boolean deleted = CacheUtils.getFileForKey(rootDirectory, key)
-				.delete();
+		boolean deleted = CacheUtils.getFileForKey(rootDirectory, key).delete();
 		CacheHeader entry = entries.get(key);
 		if (entry != null) {
 			totalSize -= entry.size;
@@ -282,6 +283,9 @@ public class DiskBasedCache implements Cache {
 		File[] files = rootDirectory.listFiles();
 		if (files != null) {
 			for (File file : files) {
+				if(!file.getName().startsWith(Config.CACHE_FILE_PREFIX)) {
+					continue ;
+				}
 				file.delete();
 			}
 		}
@@ -306,8 +310,8 @@ public class DiskBasedCache implements Cache {
 		Iterator<Map.Entry<String, CacheHeader>> iterator = entries
 				.entrySet().iterator();
 		while (iterator.hasNext()) {
-			Map.Entry<String, CacheHeader> entry = iterator.next();
-			CacheHeader e = entry.getValue();
+			Map.Entry<String, CacheHeader> header = iterator.next();
+			CacheHeader e = header.getValue();
 			boolean deleted = CacheUtils.getFileForKey(rootDirectory, e.key).delete();
 			if (deleted) {
 				totalSize -= e.size;
