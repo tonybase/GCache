@@ -47,7 +47,6 @@ public class Builders {
 				this.gcache = new DiskBasedCache(transcoder);
 				break;
 			}
-
 			return this;
 		}
 
@@ -82,7 +81,8 @@ public class Builders {
 		}
 
 		public GCache build() {
-			gcache.config(config);
+			this.gcache.config(config);
+			this.gcache.initialize();
 			return this.gcache;
 		}
 	}

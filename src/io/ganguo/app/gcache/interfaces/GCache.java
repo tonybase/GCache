@@ -63,11 +63,11 @@ public abstract class GCache implements Cache {
 	public <K, V> V get(K key) {
 		if (key == null)
 			return null;
-		if (!contains(key))
+		if (!contains(keyToString(key)))
 			return null;
 		lock.readLock().lock();
 		try {
-			return (V) transcoder.decode(getEntry(key));
+			return (V) transcoder.decode(getEntry(keyToString(key)));
 		} finally {
 			lock.readLock().unlock();
 		}
@@ -84,8 +84,8 @@ public abstract class GCache implements Cache {
 			return;
 		lock.writeLock().lock();
 		try {
-			putEntry(key,
-					transcoder.encode(value,
+			putEntry(transcoder.decodeKey(key),
+						transcoder.encode(value,
 							defaultCacheTime));
 		} finally {
 			lock.writeLock().unlock();
@@ -112,10 +112,13 @@ public abstract class GCache implements Cache {
 		}
 		lock.writeLock().lock();
 		try {
-			putEntry(key, transcoder.encode(value, ttl));
+			putEntry(keyToString(key), transcoder.encode(value, ttl));
 		} finally {
 			lock.writeLock().unlock();
 		}
 	}
 
+	public <K> String keyToString(K key) {
+		return transcoder.decodeKey(key);
+	}
 }

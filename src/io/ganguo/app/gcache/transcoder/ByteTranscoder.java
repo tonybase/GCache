@@ -3,16 +3,16 @@ package io.ganguo.app.gcache.transcoder;
 import io.ganguo.app.gcache.interfaces.Cache.Entry;
 import io.ganguo.app.gcache.interfaces.Transcoder;
 
-public class StringTranscoder implements Transcoder<String, String> {
+public class ByteTranscoder implements Transcoder<String, byte[]> {
 
 	@Override
-	public Entry encode(String value, int ttl) {
-		return new Entry(value.getBytes(), ttl);
+	public Entry encode(byte[] value, int ttl) {
+		return new Entry(value, ttl);
 	}
 
 	@Override
-	public String decode(Entry entry) {
-		return new String(entry.getData());
+	public byte[] decode(Entry entry) {
+		return entry.getData();
 	}
 
 	@Override

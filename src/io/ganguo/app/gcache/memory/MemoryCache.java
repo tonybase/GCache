@@ -97,8 +97,8 @@ public class MemoryCache extends GCache {
 	 * @param key
 	 */
 	@Override
-	public <T> void invalidate(T key) {
-		Entry entry = getEntry(key.toString());
+	public <K> void invalidate(K key) {
+		Entry entry = getEntry(keyToString(key));
 		entry.setTtl(0);
 	}
 
@@ -109,16 +109,16 @@ public class MemoryCache extends GCache {
 	 * @param entry
 	 */
 	@Override
-	public <T> void putEntry(T key, Entry entry) {
+	public <K> void putEntry(K key, Entry entry) {
 		pruneIfNeeded(entry.size());
 
-		if (!entries.containsKey(key.toString())) {
+		if (!entries.containsKey(keyToString(key))) {
 			totalSize += entry.size();
 		} else {
-			Entry oldEntry = entries.get(key.toString());
+			Entry oldEntry = entries.get(keyToString(key));
 			totalSize -= oldEntry.size();
 		}
-		entries.put(key.toString(), entry);
+		entries.put(keyToString(key), entry);
 	}
 	
 	/**
@@ -128,11 +128,11 @@ public class MemoryCache extends GCache {
 	 * @return
 	 */
 	@Override
-	public <T> Entry getEntry(T key) {
-		Entry entry = entries.get(key.toString());
+	public <K> Entry getEntry(K key) {
+		Entry entry = entries.get(keyToString(key));
 
 		if (entry != null && entry.isExpired()) {
-			remove(key.toString());
+			remove(key);
 			return null;
 		}
 		return entry;
@@ -145,8 +145,8 @@ public class MemoryCache extends GCache {
 	 * @return
 	 */
 	@Override
-	public <T> boolean contains(T key) {
-		Entry entry = entries.get(key.toString());
+	public <K> boolean contains(K key) {
+		Entry entry = entries.get(keyToString(key));
 		if (entry != null && !entry.isExpired()) {
 			return true;
 		}
@@ -159,11 +159,11 @@ public class MemoryCache extends GCache {
 	 * @param key
 	 */
 	@Override
-	public <T> void remove(T key) {
-		Entry entry = entries.get(key.toString());
+	public <K> void remove(K key) {
+		Entry entry = entries.get(keyToString(key));
 		if (entry != null) {
 			totalSize -= entry.size();
-			entries.remove(key.toString());
+			entries.remove(keyToString(key));
 		}
 	}
 
@@ -199,8 +199,7 @@ public class MemoryCache extends GCache {
 			iterator.remove();
 			prunedFiles++;
 
-			if ((totalSize + neededSpace) < maxCacheSizeInBytes
-					* Config.HYSTERESIS_FACTOR) {
+			if ((totalSize + neededSpace) < maxCacheSizeInBytes * Config.HYSTERESIS_FACTOR) {
 				break;
 			}
 		}
@@ -209,5 +208,4 @@ public class MemoryCache extends GCache {
 				System.currentTimeMillis() - startTime));
 
 	}
-
 }

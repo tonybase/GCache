@@ -1,4 +1,5 @@
 import io.ganguo.app.gcache.Builders;
+import io.ganguo.app.gcache.Config;
 import io.ganguo.app.gcache.interfaces.GCache;
 import io.ganguo.app.gcache.transcoder.StringTranscoder;
 import io.ganguo.app.gcache.util.GBenchmark;
@@ -9,7 +10,7 @@ public class TestMemory {
 	public static void main(String[] args) {
 		GCache cache = Builders.newBuilderForMemory()
 				.withTranscoder(new StringTranscoder())
-				.maxMemoryUsageBytes(10000)
+				.maxMemoryUsageBytes(5 * Config.BYTES_MB)
 				.defaultCacheTime(20)
 				.build();
 		

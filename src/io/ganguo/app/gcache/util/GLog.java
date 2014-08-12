@@ -49,15 +49,15 @@ public class GLog {
 		
 		if (e == null) {
 			if (isError) {
-				System.err.println(tag + " " + msg);
+				System.err.println("[" + tag + "] " + msg);
 			} else {
-				System.out.println(tag + " " + msg);
+				System.out.println("[" + tag + "] " + msg);
 			}
 		} else {
 			if (isError) {
-				System.err.println(tag + " " + msg + "(" + e.getMessage() + ")");
+				System.err.println("[" + tag + "] " + msg + "(" + e.getMessage() + ")");
 			} else {
-				System.out.println(tag + " " + msg + "(" + e.getMessage() + ")");
+				System.out.println("[" + tag + "] " + msg + "(" + e.getMessage() + ")");
 			}
 		}
 	}

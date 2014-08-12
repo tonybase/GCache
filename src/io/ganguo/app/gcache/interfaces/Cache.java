@@ -27,7 +27,7 @@ public interface Cache  {
 	 * 
 	 * @param key
 	 */
-	public <T> void invalidate(T key);
+	public <K> void invalidate(K key);
 
 	/**
 	 * 把数据放入缓存中
@@ -35,7 +35,7 @@ public interface Cache  {
 	 * @param key
 	 * @param entry
 	 */
-	public <T> void putEntry(T key, Entry entry);
+	public <K> void putEntry(K key, Entry entry);
 
 	/**
 	 * 获取缓存数据
@@ -43,7 +43,7 @@ public interface Cache  {
 	 * @param key
 	 * @return
 	 */
-	public <T> Entry getEntry(T key);
+	public <K> Entry getEntry(K key);
 
 	/**
 	 * 是否存在该缓存
@@ -51,14 +51,14 @@ public interface Cache  {
 	 * @param key
 	 * @return
 	 */
-	public <T> boolean contains(T key);
+	public <K> boolean contains(K key);
 
 	/**
 	 * 删除缓存数据
 	 * 
 	 * @param key
 	 */
-	public <T> void remove(T key);
+	public <K> void remove(K key);
 
 	/**
 	 * 清除所有缓存

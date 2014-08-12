@@ -3,7 +3,6 @@ package io.ganguo.app.gcache.disk;
 import io.ganguo.app.gcache.Config;
 import io.ganguo.app.gcache.interfaces.GCache;
 import io.ganguo.app.gcache.interfaces.Transcoder;
-import io.ganguo.app.gcache.interfaces.Cache.Entry;
 import io.ganguo.app.gcache.util.CacheUtils;
 import io.ganguo.app.gcache.util.GLog;
 import io.ganguo.app.gcache.util.StreamUtils;
@@ -130,7 +129,7 @@ public class DiskBasedCache  extends GCache {
 	 */
 	@Override
 	public synchronized <K> void invalidate(K key) {
-		CacheHeader header = entries.get(key.toString());
+		CacheHeader header = entries.get(keyToString(key));
 		header.ttl = 0;
 	}
 
@@ -143,10 +142,10 @@ public class DiskBasedCache  extends GCache {
 	@Override
 	public <K> void putEntry(K key, Entry entry) {
 		pruneIfNeeded(entry.size());
-		File file = CacheUtils.getFileForKey(rootDirectory, key.toString());
+		File file = CacheUtils.getFileForKey(rootDirectory, keyToString(key));
 		try {
 			FileOutputStream fos = new FileOutputStream(file);
-			CacheHeader e = new CacheHeader(key.toString(), entry);
+			CacheHeader e = new CacheHeader(keyToString(key), entry);
 			boolean success = e.writeHeader(fos);
 			if (!success) {
 				fos.close();
@@ -154,11 +153,11 @@ public class DiskBasedCache  extends GCache {
 			}
 			fos.write(entry.getData());
 			fos.close();
-			putHeader(key.toString(), e);
+			putHeader(keyToString(key), e);
 			return;
 		} catch (IOException e) {
 			GLog.d(TAG, "Failed to write header for "
-					+ file.getAbsolutePath(), e);
+						+ file.getAbsolutePath(), e);
 		}
 		boolean deleted = file.delete();
 		if (!deleted) {
@@ -173,14 +172,14 @@ public class DiskBasedCache  extends GCache {
 	 * @param key
 	 * @param header
 	 */
-	public <K> void putHeader(K key, CacheHeader header) {
-		if (!entries.containsKey(key.toString())) {
+	public void putHeader(String key, CacheHeader header) {
+		if (!entries.containsKey(key)) {
 			totalSize += header.size;
 		} else {
-			CacheHeader oldEntry = entries.get(key.toString());
+			CacheHeader oldEntry = entries.get(key);
 			totalSize += (header.size - oldEntry.size);
 		}
-		entries.put(key.toString(), header);
+		entries.put(key, header);
 	}
 
 	/**
@@ -191,17 +190,17 @@ public class DiskBasedCache  extends GCache {
 	 */
 	@Override
 	public <K> Entry getEntry(K key) {
-		CacheHeader entry = entries.get(key.toString());
+		CacheHeader entry = entries.get(keyToString(key));
 		// if the entry does not exist, return.
 		if (entry == null) {
 			return null;
 		}
 		if (entry.isExpired()) {
-			remove(key.toString());
+			remove(key);
 			return null;
 		}
 
-		File file = CacheUtils.getFileForKey(rootDirectory, key.toString());
+		File file = CacheUtils.getFileForKey(rootDirectory, keyToString(key));
 		CountingInputStream cis = null;
 		try {
 			cis = new CountingInputStream(new FileInputStream(file));
@@ -210,7 +209,7 @@ public class DiskBasedCache  extends GCache {
 			return entry.toCacheEntry(data);
 		} catch (IOException e) {
 			GLog.d(TAG, "Could not read cache data for " + file.getAbsolutePath(), e);
-			remove(key.toString());
+			remove(key);
 			return null;
 		} finally {
 			if (cis != null) {
@@ -231,10 +230,11 @@ public class DiskBasedCache  extends GCache {
 	 */
 	@Override
 	public <K> boolean contains(K key) {
-		CacheHeader header = entries.get(key.toString());
+		CacheHeader header = entries.get(keyToString(key));
 		if (header != null && !header.isExpired()) {
 			return true;
 		}
+		remove(key);
 		return false;
 	}
 
@@ -245,17 +245,19 @@ public class DiskBasedCache  extends GCache {
 	 */
 	@Override
 	public synchronized <K>  void remove(K key) {
-		boolean deleted = CacheUtils.getFileForKey(rootDirectory, key.toString()).delete();
-		CacheHeader header = entries.get(key.toString());
+		File file = CacheUtils.getFileForKey(rootDirectory, keyToString(key));
+		CacheHeader header = entries.get(keyToString(key));
 		if (header != null) {
 			totalSize -= header.size;
-			entries.remove(key.toString());
+			entries.remove(keyToString(key));
 		}
-		if (!deleted) {
-			GLog.d(TAG,
-					String.format("Could not delete cache entry for key=%s, filename=%s",
-							key,
-							CacheUtils.getHashForKey(key.toString())));
+		if(file.exists()) {
+			if (!file .delete()) {
+				GLog.d(TAG,
+						String.format("Could not delete cache entry for key=%s, filename=%s",
+								key,
+								CacheUtils.getHashForKey(keyToString(key))));
+				}
 		}
 	}
 

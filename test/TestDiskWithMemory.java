@@ -1,4 +1,6 @@
 import io.ganguo.app.gcache.Builders;
+import io.ganguo.app.gcache.CacheTime;
+import io.ganguo.app.gcache.Config;
 import io.ganguo.app.gcache.interfaces.GCache;
 import io.ganguo.app.gcache.transcoder.StringTranscoder;
 import io.ganguo.app.gcache.util.GBenchmark;
@@ -12,9 +14,9 @@ public class TestDiskWithMemory {
 		GCache cache = Builders.newBuilder()
 				.withTranscoder(new StringTranscoder())
 				.withCacheRootDirectory(new File("diskCache"))
-				.maxDiskUsageBytes(10000)
-				.maxMemoryUsageBytes(1000)
-				.defaultCacheTime(50)
+				.maxDiskUsageBytes(10 * Config.BYTES_MB)
+				.maxMemoryUsageBytes(5 * Config.BYTES_MB)
+				.defaultCacheTime(CacheTime.HALF_MINUTE)
 				.build();
 		
 		testPut(cache, 100);
