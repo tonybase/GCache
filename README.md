@@ -32,6 +32,7 @@ DiskBasedCache:
 				.defaultCacheTime(50)
 				.build();			
 				
-	cache.put(K, V);
+
+	cache.put(K, V); //use defaultCacheTime
+	cache.get(K, V, TTL);
 	cache.get(K);
-	cache.get(K, TTL);
