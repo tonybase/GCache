@@ -34,5 +34,5 @@ DiskBasedCache:
 				
 
 	cache.put(K, V); //use defaultCacheTime
-	cache.get(K, V, TTL);
+	cache.put(K, V, TTL);
 	cache.get(K);
