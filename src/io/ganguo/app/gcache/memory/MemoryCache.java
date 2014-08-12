@@ -1,7 +1,8 @@
 package io.ganguo.app.gcache.memory;
 
-import io.ganguo.app.gcache.Cache;
 import io.ganguo.app.gcache.Config;
+import io.ganguo.app.gcache.interfaces.GCache;
+import io.ganguo.app.gcache.interfaces.Transcoder;
 import io.ganguo.app.gcache.util.GLog;
 
 import java.util.Iterator;
@@ -13,7 +14,7 @@ import java.util.Map;
  * <p/>
  * Created by zhihui_chen on 14-8-7.
  */
-public class MemoryCache implements Cache {
+public class MemoryCache extends GCache {
 	private static final String TAG = MemoryCache.class.getName();
 	
 	/**
@@ -29,7 +30,7 @@ public class MemoryCache implements Cache {
 	/**
 	 * 允许最大的缓存大小
 	 */
-	private int maxCacheSizeInBytes = Config.DEFAULT_MEMORY_USAGE_BYTES;
+	private long maxCacheSizeInBytes = Config.DEFAULT_MEMORY_USAGE_BYTES;
 
 	/**
 	 * 使用默认配置缓存容量
@@ -37,7 +38,7 @@ public class MemoryCache implements Cache {
 	 * @param maxCacheSizeInBytes
 	 */
 	public MemoryCache() {
-		this.maxCacheSizeInBytes = Config.DEFAULT_MEMORY_USAGE_BYTES;
+		this(Config.DEFAULT_MEMORY_USAGE_BYTES);
 	}
 	
 	/**
@@ -46,9 +47,28 @@ public class MemoryCache implements Cache {
 	 * @param maxCacheSizeInBytes
 	 */
 	public MemoryCache(int maxCacheSizeInBytes) {
-		this.maxCacheSizeInBytes = maxCacheSizeInBytes;
+		this(null, maxCacheSizeInBytes);
 	}
 
+	/**
+	 * 使用默认配置缓存容量
+	 * 
+	 * @param maxCacheSizeInBytes
+	 */
+	public MemoryCache(Transcoder transcoder) {
+		this(transcoder, Config.DEFAULT_MEMORY_USAGE_BYTES);
+	}
+	
+	/**
+	 * 使用默认配置缓存容量
+	 * 
+	 * @param maxCacheSizeInBytes
+	 */
+	public MemoryCache(Transcoder transcoder, int maxCacheSizeInBytes) {
+		super(transcoder);
+		this.maxCacheSizeInBytes = maxCacheSizeInBytes;
+	}
+	
 	/**
 	 * 缓存配置
 	 * 
@@ -57,14 +77,17 @@ public class MemoryCache implements Cache {
 	 */
 	@Override
 	public void config(Config config) {
-		this.maxCacheSizeInBytes = config.getDiskUsageBytes();
+		super.config(config);
+		if(config.getMemoryUsageBytes() > 0) {
+			this.maxCacheSizeInBytes = config.getMemoryUsageBytes();
+		}
 	}
 
 	/**
 	 * 初始化缓存
 	 */
 	@Override
-	public synchronized void initialize() {
+	public void initialize() {
 
 	}
 
@@ -74,21 +97,9 @@ public class MemoryCache implements Cache {
 	 * @param key
 	 */
 	@Override
-	public synchronized void invalidate(String key) {
-		Entry entry = get(key);
+	public <T> void invalidate(T key) {
+		Entry entry = getEntry(key.toString());
 		entry.setTtl(0);
-	}
-
-	/**
-	 * 把数据放入缓存中
-	 * 
-	 * @param key
-	 * @param bytes
-	 * @param ttl
-	 */
-	@Override
-	public void put(String key, byte[] bytes, int ttl) {
-		put(key, new Entry(bytes, ttl));
 	}
 
 	/**
@@ -98,31 +109,16 @@ public class MemoryCache implements Cache {
 	 * @param entry
 	 */
 	@Override
-	public synchronized void put(String key, Entry entry) {
+	public <T> void putEntry(T key, Entry entry) {
 		pruneIfNeeded(entry.size());
 
-		if (!entries.containsKey(key)) {
+		if (!entries.containsKey(key.toString())) {
 			totalSize += entry.size();
 		} else {
-			Entry oldEntry = entries.get(key);
+			Entry oldEntry = entries.get(key.toString());
 			totalSize -= oldEntry.size();
 		}
-		entries.put(key, entry);
-	}
-
-	/**
-	 * 获取Bytes缓存数据
-	 * 
-	 * @param key
-	 * @return
-	 */
-	@Override
-	public byte[] getBytes(String key) {
-		Entry entry = get(key);
-		if(entry != null) {
-			return entry.getData();
-		}
-		return null;
+		entries.put(key.toString(), entry);
 	}
 	
 	/**
@@ -132,11 +128,11 @@ public class MemoryCache implements Cache {
 	 * @return
 	 */
 	@Override
-	public synchronized Entry get(String key) {
-		Entry entry = entries.get(key);
+	public <T> Entry getEntry(T key) {
+		Entry entry = entries.get(key.toString());
 
 		if (entry != null && entry.isExpired()) {
-			remove(key);
+			remove(key.toString());
 			return null;
 		}
 		return entry;
@@ -149,8 +145,8 @@ public class MemoryCache implements Cache {
 	 * @return
 	 */
 	@Override
-	public boolean contains(String key) {
-		Entry entry = entries.get(key);
+	public <T> boolean contains(T key) {
+		Entry entry = entries.get(key.toString());
 		if (entry != null && !entry.isExpired()) {
 			return true;
 		}
@@ -163,11 +159,11 @@ public class MemoryCache implements Cache {
 	 * @param key
 	 */
 	@Override
-	public synchronized void remove(String key) {
-		Entry entry = entries.get(key);
+	public <T> void remove(T key) {
+		Entry entry = entries.get(key.toString());
 		if (entry != null) {
 			totalSize -= entry.size();
-			entries.remove(key);
+			entries.remove(key.toString());
 		}
 	}
 
@@ -213,4 +209,5 @@ public class MemoryCache implements Cache {
 				System.currentTimeMillis() - startTime));
 
 	}
+
 }

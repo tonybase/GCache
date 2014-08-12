@@ -1,6 +1,7 @@
 package io.ganguo.app.gcache.disk;
 
 import io.ganguo.app.gcache.Config;
+import io.ganguo.app.gcache.interfaces.Transcoder;
 import io.ganguo.app.gcache.memory.MemoryCache;
 
 import java.io.File;
@@ -9,11 +10,7 @@ import java.io.File;
  * Created by zhihui_chen on 14-8-7.
  */
 public class DiskWithMemoryCache extends DiskBasedCache {
-	/**
-	 * 允许最大的缓存大小
-	 */
-	private int maxMemCacheSizeInBytes = Config.DEFAULT_MEMORY_USAGE_BYTES;
-	
+
 	/**
 	 * 内存缓存容器
 	 */
@@ -26,41 +23,17 @@ public class DiskWithMemoryCache extends DiskBasedCache {
 	 */
 	public DiskWithMemoryCache(File rootDirectory) {
 		super(rootDirectory);
+		memoryCache = new MemoryCache();
 	}
 
 	/**
-	 * 需要文件缓存的根目录 最多支持存放多少数据
+	 * put/get 解码器
 	 * 
-	 * @param rootDirectory
-	 * @param maxDiskCacheSizeInBytes
+	 * @param transcoder
 	 */
-	public DiskWithMemoryCache(File rootDirectory, long maxDiskCacheSizeInBytes) {
-		super(rootDirectory, (int) maxDiskCacheSizeInBytes);
-	}
-
-	/**
-	 * 需要文件缓存的根目录 最多支持存放多少数据
-	 * 
-	 * @param rootDirectory
-	 * @param maxMemCacheSizeInBytes
-	 */
-	public DiskWithMemoryCache(File rootDirectory, int maxMemCacheSizeInBytes) {
-		super(rootDirectory);
-		this.maxMemCacheSizeInBytes = maxMemCacheSizeInBytes;
-	}
-
-	/**
-	 * 需要文件缓存的根目录 最多支持存放多少数据
-	 * 
-	 * @param rootDirectory
-	 * @param maxMemCacheSizeInBytes
-	 * @param maxDiskCacheSizeInBytes
-	 */
-	public DiskWithMemoryCache(File rootDirectory,
-			int maxMemCacheSizeInBytes, int maxDiskCacheSizeInBytes) {
-		super(rootDirectory, maxDiskCacheSizeInBytes);
-		
-		this.maxMemCacheSizeInBytes = maxMemCacheSizeInBytes;
+	public DiskWithMemoryCache(Transcoder transcoder) {
+		super(transcoder);
+		memoryCache = new MemoryCache(transcoder);
 	}
 
 	/**
@@ -71,18 +44,17 @@ public class DiskWithMemoryCache extends DiskBasedCache {
 	 */
 	@Override
 	public void config(Config config) {
-		super.config(config);
 		memoryCache.config(config);
+		super.config(config);
 	}
 
 	/**
 	 * 初始化缓存
 	 */
 	@Override
-	public synchronized void initialize() {
-		super.initialize();
-		memoryCache = new MemoryCache(maxMemCacheSizeInBytes);
+	public void initialize() {
 		memoryCache.initialize();
+		super.initialize();
 	}
 
 	/**
@@ -91,21 +63,9 @@ public class DiskWithMemoryCache extends DiskBasedCache {
 	 * @param key
 	 */
 	@Override
-	public synchronized void invalidate(String key) {
+	public synchronized <K> void invalidate(K key) {
 		memoryCache.invalidate(key);
 		super.invalidate(key);
-	}
-
-	/**
-	 * 把数据放入缓存中
-	 * 
-	 * @param key
-	 * @param bytes
-	 * @param ttl
-	 */
-	@Override
-	public void put(String key, byte[] bytes, int ttl) {
-		put(key, new Entry(bytes, ttl));
 	}
 
 	/**
@@ -115,24 +75,9 @@ public class DiskWithMemoryCache extends DiskBasedCache {
 	 * @param entry
 	 */
 	@Override
-	public synchronized void put(String key, Entry entry) {
-		super.put(key, entry);
-		memoryCache.put(key, entry);
-	}
-
-	/**
-	 * 获取Bytes缓存数据
-	 * 
-	 * @param key
-	 * @return
-	 */
-	@Override
-	public synchronized byte[] getBytes(String key) {
-		Entry entry = get(key);
-		if (entry != null) {
-			return entry.getData();
-		}
-		return null;
+	public <K> void putEntry(K key, Entry entry) {
+		memoryCache.putEntry(key, entry);
+		super.putEntry(key, entry);
 	}
 
 	/**
@@ -142,10 +87,10 @@ public class DiskWithMemoryCache extends DiskBasedCache {
 	 * @return
 	 */
 	@Override
-	public synchronized Entry get(String key) {
-		Entry entry = memoryCache.get(key);
+	public <K> Entry getEntry(K key) {
+		Entry entry = memoryCache.getEntry(key);
 		if (entry == null) {
-			entry = super.get(key);
+			entry = super.getEntry(key);
 		}
 		return entry;
 	}
@@ -157,8 +102,12 @@ public class DiskWithMemoryCache extends DiskBasedCache {
 	 * @return
 	 */
 	@Override
-	public boolean contains(String key) {
-		return get(key) != null;
+	public <K> boolean contains(K key) {
+		boolean isCon = memoryCache.contains(key);
+		if (isCon) {
+			return isCon;
+		}
+		return super.contains(key);
 	}
 
 	/**
@@ -167,7 +116,7 @@ public class DiskWithMemoryCache extends DiskBasedCache {
 	 * @param key
 	 */
 	@Override
-	public synchronized void remove(String key) {
+	public synchronized <K> void remove(K key) {
 		memoryCache.remove(key);
 		super.remove(key);
 	}

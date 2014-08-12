@@ -1,11 +1,13 @@
-package io.ganguo.app.gcache;
+package io.ganguo.app.gcache.interfaces;
+
+import io.ganguo.app.gcache.Config;
 
 /**
  * 缓存接口
  * <p/>
  * Created by zhihui_chen on 14-8-5.
  */
-public interface Cache {
+public interface Cache  {
 
 	/**
 	 * 缓存配置
@@ -25,16 +27,7 @@ public interface Cache {
 	 * 
 	 * @param key
 	 */
-	public void invalidate(String key);
-
-	/**
-	 * 把数据放入缓存中
-	 * 
-	 * @param key
-	 * @param bytes
-	 * @param ttl
-	 */
-	public void put(String key, byte[] bytes, int ttl);
+	public <T> void invalidate(T key);
 
 	/**
 	 * 把数据放入缓存中
@@ -42,7 +35,7 @@ public interface Cache {
 	 * @param key
 	 * @param entry
 	 */
-	public void put(String key, Entry entry);
+	public <T> void putEntry(T key, Entry entry);
 
 	/**
 	 * 获取缓存数据
@@ -50,15 +43,7 @@ public interface Cache {
 	 * @param key
 	 * @return
 	 */
-	public byte[] getBytes(String key);
-	
-	/**
-	 * 获取缓存数据
-	 * 
-	 * @param key
-	 * @return
-	 */
-	public Entry get(String key);
+	public <T> Entry getEntry(T key);
 
 	/**
 	 * 是否存在该缓存
@@ -66,14 +51,14 @@ public interface Cache {
 	 * @param key
 	 * @return
 	 */
-	public boolean contains(String key);
+	public <T> boolean contains(T key);
 
 	/**
 	 * 删除缓存数据
 	 * 
 	 * @param key
 	 */
-	public void remove(String key);
+	public <T> void remove(T key);
 
 	/**
 	 * 清除所有缓存

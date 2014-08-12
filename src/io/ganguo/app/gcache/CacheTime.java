@@ -2,30 +2,20 @@ package io.ganguo.app.gcache;
 
 /**
  * 缓存时间
- *
+ * 
  * Created by zhihui_chen on 14-8-8.
  */
-public enum CacheTime {
+public class CacheTime {
 
-    NONE(0),
-    HALF_MINUTE(30),
-    ONE_MINUTE(1 * 60),
-    FIVE_MINUTE(5 * 60),
-    TEN_MINUTE(10 * 60),
-    FIFTEEN_MINUTE(15 * 60),
-    HALF_HOUR(30 * 60),
-    HOUR(60 * 60),
-    DAY(24 * 60 * 60),
-    WEEK(7 * 24 * 60 * 60);
-
-    private int value;
-
-    CacheTime(int value) {
-	    this.value = value;
-    }
-
-    public int getValue() {
-	    return value * 1000;
-    }
+	public static final int NONE = 0;
+	public static final int HALF_MINUTE = 30000;
+	public static final int ONE_MINUTE = 1 * 6000;
+	public static final int FIVE_MINUTE = 5 * ONE_MINUTE;
+	public static final int TEN_MINUTE = 10 * ONE_MINUTE;
+	public static final int FIFTEEN_MINUTE = 15 * ONE_MINUTE;
+	public static final int HALF_HOUR = 30 * ONE_MINUTE;
+	public static final int HOUR = 60 * ONE_MINUTE;
+	public static final int DAY = 24 * HOUR;
+	public static final int WEEK = 7 * 24 * HOUR;
 
 }

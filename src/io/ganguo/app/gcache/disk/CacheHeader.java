@@ -1,9 +1,9 @@
 package io.ganguo.app.gcache.disk;
 
-import io.ganguo.app.gcache.Cache.Entry;
-import io.ganguo.app.gcache.Config;
+import io.ganguo.app.gcache.interfaces.Cache.Entry;
 import io.ganguo.app.gcache.util.GLog;
 import io.ganguo.app.gcache.util.StreamUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,6 +15,10 @@ import java.io.OutputStream;
  */
 public class CacheHeader {
 	private static final String TAG = CacheHeader.class.getName();
+	/**
+	 * Magic number for current version of cache file format.
+	 */
+	public static final int CACHE_MAGIC = 0xCAC00001;
 
 	/**
 	 * 生存周期 毫秒
@@ -65,7 +69,7 @@ public class CacheHeader {
 	public static CacheHeader readHeader(InputStream is) throws IOException {
 		CacheHeader entry = new CacheHeader();
 		int magic = StreamUtils.readInt(is);
-		if (magic != Config.CACHE_MAGIC) {
+		if (magic != CACHE_MAGIC) {
 			// don't bother deleting, it'll get pruned eventually
 			throw new IOException();
 		}
@@ -91,7 +95,7 @@ public class CacheHeader {
 	 */
 	public boolean writeHeader(OutputStream os) {
 		try {
-			StreamUtils.writeInt(os, Config.CACHE_MAGIC);
+			StreamUtils.writeInt(os, CACHE_MAGIC);
 			StreamUtils.writeString(os, key);
 			StreamUtils.writeLong(os, size);
 			StreamUtils.writeLong(os, ttl);
