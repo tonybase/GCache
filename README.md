@@ -6,6 +6,7 @@ GCache
 ======
 
 DiskWithMemoryCache:
+
 	GCache cache = Builders.newBuilder()
 				.withTranscoder(new StringTranscoder())
 				.withCacheRootDirectory(new File("diskCache"))
@@ -15,6 +16,7 @@ DiskWithMemoryCache:
 				.build();
 				
 MemoryCache:
+
 	GCache cache = Builders.newBuilderForMemory()
 				.withTranscoder(new StringTranscoder())
 				.maxMemoryUsageBytes(10000)
@@ -22,6 +24,7 @@ MemoryCache:
 				.build();
 				
 DiskBasedCache:
+
 	GCache cache = Builders.newBuilderForDisk()
 				.withTranscoder(new StringTranscoder())
 				.withCacheRootDirectory(new File("diskCache"))
