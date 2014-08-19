@@ -67,7 +67,9 @@ public abstract class GCache implements Cache {
 			return null;
 		lock.readLock().lock();
 		try {
-			return (V) transcoder.decode(getEntry(keyToString(key)));
+			Entry e = getEntry(keyToString(key));
+			if(e == null) return null;
+			return (V) transcoder.decode(e);
 		} finally {
 			lock.readLock().unlock();
 		}
