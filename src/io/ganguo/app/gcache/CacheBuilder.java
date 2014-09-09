@@ -9,7 +9,7 @@ import io.ganguo.app.gcache.transcoder.StringTranscoder;
 
 import java.io.File;
 
-public class Builders {
+public class CacheBuilder {
 	public enum Type {
 		DISK, MEMORY, DISK_WITH_MEMORY
 	}
@@ -88,18 +88,18 @@ public class Builders {
 	}
 
 	public static void main(String[] args) {
-		GCache gc = Builders.newBuilder()
+		GCache gc = CacheBuilder.newBuilder()
 				.withTranscoder(new StringTranscoder())
 				.maxMemoryUsageBytes(20000)
 				.maxDiskUsageBytes(40000).maxCacheTime(3000)
 				.minCacheTime(1000).defaultCacheTime(1000)
 				.build();
-		GCache gc2 = Builders.newBuilderForMemory()
+		GCache gc2 = CacheBuilder.newBuilderForMemory()
 				.withTranscoder(new StringTranscoder())
 				.maxMemoryUsageBytes(20000).maxCacheTime(3000)
 				.minCacheTime(1000).defaultCacheTime(1000)
 				.build();
-		GCache gc3 = Builders.newBuilderForDisk()
+		GCache gc3 = CacheBuilder.newBuilderForDisk()
 				.withTranscoder(new StringTranscoder())
 				.maxDiskUsageBytes(40000).maxCacheTime(3000)
 				.minCacheTime(1000).defaultCacheTime(1000)

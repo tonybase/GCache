@@ -1,5 +1,4 @@
-import io.ganguo.app.gcache.Builders;
-import io.ganguo.app.gcache.CacheTime;
+import io.ganguo.app.gcache.CacheBuilder;
 import io.ganguo.app.gcache.Config;
 import io.ganguo.app.gcache.interfaces.GCache;
 import io.ganguo.app.gcache.transcoder.StringTranscoder;
@@ -11,12 +10,12 @@ public class TestDiskWithMemory {
 	private static final String TAG = TestDiskWithMemory.class.getName();
 
 	public static void main(String[] args) {
-		GCache cache = Builders.newBuilder()
+		GCache cache = CacheBuilder.newBuilder()
 				.withTranscoder(new StringTranscoder())
 				.withCacheRootDirectory(new File("diskCache"))
 				.maxDiskUsageBytes(10 * Config.BYTES_MB)
 				.maxMemoryUsageBytes(5 * Config.BYTES_MB)
-				.defaultCacheTime(CacheTime.HALF_MINUTE)
+				.defaultCacheTime(30000)
 				.build();
 		
 		testPut(cache, 100);

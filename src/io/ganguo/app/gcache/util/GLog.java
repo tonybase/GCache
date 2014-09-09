@@ -1,5 +1,11 @@
 package io.ganguo.app.gcache.util;
 
+/**
+ * 日志输出
+ * 
+ * @author zhihui_chen
+ *
+ */
 public class GLog {
 	
 	public static boolean isDebug = true;
@@ -47,18 +53,13 @@ public class GLog {
 	private static void println(String tag, String msg, Throwable e, boolean isError) {
 		if(!isDebug) return ;
 		
-		if (e == null) {
-			if (isError) {
-				System.err.println("[" + tag + "] " + msg);
-			} else {
-				System.out.println("[" + tag + "] " + msg);
-			}
+		if (isError) {
+			System.err.println("[" + tag + "] " + msg);
 		} else {
-			if (isError) {
-				System.err.println("[" + tag + "] " + msg + "(" + e.getMessage() + ")");
-			} else {
-				System.out.println("[" + tag + "] " + msg + "(" + e.getMessage() + ")");
-			}
+			System.out.println("[" + tag + "] " + msg);
+		}
+		if (e != null) {
+			e.printStackTrace();
 		}
 	}
 

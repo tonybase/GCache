@@ -84,6 +84,10 @@ public class DiskBasedCache  extends GCache {
 	 */
 	@Override
 	public void initialize() {
+		if(rootDirectory == null) {
+			GLog.e(TAG,  "没有配置缓存路径");
+			return;
+		}
 		if (!this.rootDirectory.exists()) {
 			if (!this.rootDirectory.mkdirs()) {
 				GLog.d(TAG, "Unable to create cache dir " 
